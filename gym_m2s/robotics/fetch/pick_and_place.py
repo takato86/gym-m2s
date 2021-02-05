@@ -8,7 +8,7 @@ MODEL_XML_PATH = os.path.join('fetch', 'pick_and_place.xml')
 
 
 class SingleFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
-    def __init__(self, reward_type='sparse'):
+    def __init__(self, reward_type='sparse', initial_goal_seed=None):
         initial_qpos = {
             'robot0:slide0': 0.405,
             'robot0:slide1': 0.48,
@@ -17,6 +17,7 @@ class SingleFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
         }
         self.fixed_object_qpos = initial_qpos['object0:joint']
         self.fixed_goal = None
+        self.np_goal_random, _ = utils.seeding.np_random(initial_goal_seed)
         fetch_env.FetchEnv.__init__(
             self, MODEL_XML_PATH, has_object=True, block_gripper=False,
             n_substeps=20, gripper_extra_height=0.2, target_in_the_air=True,
@@ -41,7 +42,7 @@ class SingleFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
         self.fixed_goal = self._initialize_goal()
 
     def _initialize_goal(self):
-        u_random = self.np_random.uniform(
+        u_random = self.np_goal_random.uniform(
             -self.target_range,
             self.target_range, size=3
         )
@@ -49,15 +50,15 @@ class SingleFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
             goal = self.initial_gripper_xpos[:3] + u_random
             goal += self.target_offset
             goal[2] = self.height_offset
-            if self.target_in_the_air and self.np_random.uniform() < 0.5:
-                goal[2] += self.np_random.uniform(0, 0.45)
+            if self.target_in_the_air and self.np_goal_random.uniform() < 0.5:
+                goal[2] += self.np_goal_random.uniform(0, 0.45)
         else:
             goal = self.initial_gripper_xpos[:3] + u_random
         return goal.copy()
 
     def _initialize_object_xpos(self):
         object_xpos = self.initial_gripper_xpos[:2]
-        u_random = self.np_random.uniform(
+        u_random = self.np_goal_random.uniform(
             -self.obj_range, self.obj_range, size=2
         )
         l2_dist = np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2])
