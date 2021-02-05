@@ -15,7 +15,7 @@ class SingleFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
             'robot0:slide2': 0.0,
             'object0:joint': [1.25, 0.53, 0.4, 1., 0., 0., 0.],
         }
-        self.fixed_object_qpos = initial_qpos['object0:joint']
+        self.fixed_object_qpos = None  # initial_qpos['object0:joint']
         self.fixed_goal = None
         self.np_goal_random, _ = utils.seeding.np_random(initial_goal_seed)
         fetch_env.FetchEnv.__init__(
@@ -40,6 +40,7 @@ class SingleFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
     def _env_setup(self, initial_qpos):
         super()._env_setup(initial_qpos)
         self.fixed_goal = self._initialize_goal()
+        self.fixed_object_qpos = self._initialize_object_xpos()
 
     def _initialize_goal(self):
         u_random = self.np_goal_random.uniform(
@@ -58,14 +59,13 @@ class SingleFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
 
     def _initialize_object_xpos(self):
         object_xpos = self.initial_gripper_xpos[:2]
-        u_random = self.np_goal_random.uniform(
-            -self.obj_range, self.obj_range, size=2
-        )
-        l2_dist = np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2])
-        while l2_dist < 0.1:
+        while np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2]) < 0.1:
+            u_random = self.np_goal_random.uniform(
+                -self.obj_range, self.obj_range, size=2
+            )
             object_xpos = self.initial_gripper_xpos[:2] + u_random
         object_qpos = self.sim.data.get_joint_qpos('object0:joint')
-        assert object_qpos.shape == (7,)
-        object_qpos[:2] = object_qpos
+        assert object_qpos.shape == (7,) and object_xpos.shape == (2,)
+        object_qpos[:2] = object_xpos
         # self.sim.data.set_joint_qpos('object0:joint', object_qpos)
         return object_qpos
