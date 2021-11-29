@@ -10,3 +10,10 @@ register(
     kwargs=kwargs,
     max_episode_steps=50,
 )
+
+register(
+    id='SingleFetchPickAndPlace-v1',
+    entry_point='gym_m2s.robotics:SingleGoalRewardFetchPickAndPlaceEnv',
+    kwargs=kwargs,
+    max_episode_steps=50
+)
