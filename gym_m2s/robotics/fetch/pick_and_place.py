@@ -76,8 +76,19 @@ class SingleFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
 class SingleGoalRewardFetchPickAndPlaceEnv(SingleFetchPickAndPlaceEnv):
     def __init__(self, reward_type='sparse', initial_goal_seed=None):
         super().__init__(reward_type, initial_goal_seed)
+        self.init_obs = None
 
     def compute_reward(self, achieved_goal, goal, info):
         """Compute goal reward"""
         d = goal_distance(achieved_goal, goal)
         return (d <= self.distance_threshold).astype(np.float32)
+
+    def reset(self):
+        """generate observation."""
+        obs = super().reset()
+
+        if self.init_obs is None:
+            # スタートを生成していなければ、生成して登録。
+            self.init_obs = obs
+        
+        return self.init_obs
