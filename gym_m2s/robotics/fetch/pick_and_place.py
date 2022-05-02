@@ -8,7 +8,7 @@ import numpy as np
 MODEL_XML_PATH = os.path.join('fetch', 'pick_and_place.xml')
 
 
-class StartFixedFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
+class GoalFixedFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
     def __init__(self, reward_type='sparse', initial_goal_seed=None):
         initial_qpos = {
             'robot0:slide0': 0.405,
@@ -142,3 +142,14 @@ class SparseGoalRewardFetchPickAndPlaceEnv(StartGoalFixedFetchPickAndPlaceEnv):
             self.init_obs = obs
         
         return self.init_obs
+
+
+class SparseGoalFixedFetchPickAndPlaceEnv(GoalFixedFetchPickAndPlaceEnv):
+    def __init__(self, reward_type='sparse', initial_goal_seed=None):
+        super().__init__(reward_type, initial_goal_seed)
+        self.init_obs = None
+
+    def compute_reward(self, achieved_goal, goal, info):
+        """Compute goal reward"""
+        d = goal_distance(achieved_goal, goal)
+        return (d <= self.distance_threshold).astype(np.float32)

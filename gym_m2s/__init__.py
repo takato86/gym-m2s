@@ -20,7 +20,14 @@ register(
 
 register(
     id='SingleFetchPickAndPlace-v2',
-    entry_point='gym_m2s.robotics:StartFixedFetchPickAndPlaceEnv',
+    entry_point='gym_m2s.robotics:GoalFixedFetchPickAndPlaceEnv',
+    kwargs=kwargs,
+    max_episode_steps=50
+)
+
+register(
+    id='SingleFetchPickAndPlace-v3',
+    entry_point='gym_m2s.robotics:SparseGoalFixedFetchPickAndPlaceEnv',
     kwargs=kwargs,
     max_episode_steps=50
 )

@@ -1,9 +1,12 @@
-from gym_m2s.robotics.fetch.pick_and_place import StartFixedFetchPickAndPlaceEnv,\
+from gym_m2s.robotics.fetch.pick_and_place import GoalFixedFetchPickAndPlaceEnv,\
                                                   StartGoalFixedFetchPickAndPlaceEnv,\
-                                                  SparseGoalRewardFetchPickAndPlaceEnv
+                                                  SparseGoalRewardFetchPickAndPlaceEnv,\
+                                                  SparseGoalFixedFetchPickAndPlaceEnv
+
 
 __all__ = [
-    "StartFixedFetchPickAndPlaceEnv",
+    "GoalFixedFetchPickAndPlaceEnv",
     "StartGoalFixedFetchPickAndPlaceEnv",
-    "SparseGoalRewardFetchPickAndPlaceEnv"
+    "SparseGoalRewardFetchPickAndPlaceEnv",
+    "SparseGoalFixedFetchPickAndPlaceEnv"
 ]
