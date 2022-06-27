@@ -8,7 +8,8 @@ import numpy as np
 MODEL_XML_PATH = os.path.join('fetch', 'pick_and_place.xml')
 
 
-class GoalFixedFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
+class GoalFixedPnPEnv(fetch_env.FetchEnv, utils.EzPickle):
+    """Fixed goal position."""
     def __init__(self, reward_type='sparse', initial_goal_seed=None):
         initial_qpos = {
             'robot0:slide0': 0.405,
@@ -58,7 +59,7 @@ class GoalFixedFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
         return goal.copy()
 
 
-class StartGoalFixedFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
+class StartGoalFixedPnPEnv(fetch_env.FetchEnv, utils.EzPickle):
     def __init__(self, reward_type='sparse', initial_goal_seed=None):
         initial_qpos = {
             'robot0:slide0': 0.405,
@@ -66,7 +67,7 @@ class StartGoalFixedFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
             'robot0:slide2': 0.0,
             'object0:joint': [1.25, 0.53, 0.4, 1., 0., 0., 0.],
         }
-        self.fixed_object_qpos = None  # initial_qpos['object0:joint']
+        self.fixed_object_qpos = initial_qpos['object0:joint']
         self.fixed_goal = None
         self.np_goal_random, _ = utils.seeding.np_random(initial_goal_seed)
         fetch_env.FetchEnv.__init__(
@@ -123,7 +124,8 @@ class StartGoalFixedFetchPickAndPlaceEnv(fetch_env.FetchEnv, utils.EzPickle):
         return object_qpos
 
 
-class SparseGoalRewardFetchPickAndPlaceEnv(StartGoalFixedFetchPickAndPlaceEnv):
+class StartGoalFixedGoalRewardPnPEnv(StartGoalFixedPnPEnv):
+    """start and goal position is fixed, and generate sparse goal positive reward."""
     def __init__(self, reward_type='sparse', initial_goal_seed=None):
         super().__init__(reward_type, initial_goal_seed)
         self.init_obs = None
@@ -140,11 +142,11 @@ class SparseGoalRewardFetchPickAndPlaceEnv(StartGoalFixedFetchPickAndPlaceEnv):
         if self.init_obs is None:
             # スタートを生成していなければ、生成して登録。
             self.init_obs = obs
-        
+
         return self.init_obs
 
 
-class SparseGoalFixedFetchPickAndPlaceEnv(GoalFixedFetchPickAndPlaceEnv):
+class GoalFixedGoalFixedPnPEnv(GoalFixedPnPEnv):
     def __init__(self, reward_type='sparse', initial_goal_seed=None):
         super().__init__(reward_type, initial_goal_seed)
         self.init_obs = None
@@ -153,3 +155,25 @@ class SparseGoalFixedFetchPickAndPlaceEnv(GoalFixedFetchPickAndPlaceEnv):
         """Compute goal reward"""
         d = goal_distance(achieved_goal, goal)
         return (d <= self.distance_threshold).astype(np.float32)
+
+
+class StartGoalFixedNoRewardPnPEnv(StartGoalFixedPnPEnv):
+    """start and goal position is fixed, and generate no rewards."""
+    def __init__(self, reward_type='sparse', initial_goal_seed=None):
+        super().__init__(reward_type, initial_goal_seed)
+        self.init_obs = None
+
+    def compute_reward(self, achieved_goal, goal, info):
+        """Compute goal reward"""
+        d = goal_distance(achieved_goal, goal)
+        return (d <= self.distance_threshold).astype(np.float32)
+
+    def reset(self):
+        """generate observation."""
+        obs = super().reset()
+
+        if self.init_obs is None:
+            # スタートを生成していなければ、生成して登録。
+            self.init_obs = obs
+
+        return self.init_obs

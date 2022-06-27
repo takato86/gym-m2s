@@ -1,12 +1,14 @@
-from gym_m2s.robotics.fetch.pick_and_place import GoalFixedFetchPickAndPlaceEnv,\
-                                                  StartGoalFixedFetchPickAndPlaceEnv,\
-                                                  SparseGoalRewardFetchPickAndPlaceEnv,\
-                                                  SparseGoalFixedFetchPickAndPlaceEnv
+from gym_m2s.robotics.fetch.pick_and_place import GoalFixedPnPEnv,\
+                                                  StartGoalFixedPnPEnv,\
+                                                  StartGoalFixedGoalRewardPnPEnv,\
+                                                  GoalFixedGoalFixedPnPEnv,\
+                                                  StartGoalFixedNoRewardPnPEnv
 
 
 __all__ = [
-    "GoalFixedFetchPickAndPlaceEnv",
-    "StartGoalFixedFetchPickAndPlaceEnv",
-    "SparseGoalRewardFetchPickAndPlaceEnv",
-    "SparseGoalFixedFetchPickAndPlaceEnv"
+    "StartGoalFixedPnPEnv",
+    "StartGoalFixedGoalRewardPnPEnv",
+    "GoalFixedPnPEnv",
+    "GoalFixedGoalFixedPnPEnv",
+    "StartGoalFixedNoRewardPnPEnv"
 ]
