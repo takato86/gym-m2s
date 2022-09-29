@@ -104,8 +104,11 @@ class StartGoalFixedPnPEnv(fetch_env.FetchEnv, utils.EzPickle):
             goal = self.initial_gripper_xpos[:3] + u_random
             goal += self.target_offset
             goal[2] = self.height_offset
+
             if self.target_in_the_air and self.np_goal_random.uniform() < 0.5:
                 goal[2] += self.np_goal_random.uniform(0, 0.45)
+            
+            goal = np.array([1.20391183, 0.83966603, 0.42469975])
         else:
             goal = self.initial_gripper_xpos[:3] + u_random
         return goal.copy()
