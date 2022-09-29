@@ -1,6 +1,8 @@
 from gym.envs.robotics import fetch_env
+# from gym_robotics.envs import fetch_env
 from gym import utils
 from gym.envs.robotics.fetch_env import goal_distance
+# from gym_robotics.envs.fetch_env import goal_distance
 import os
 import numpy as np
 
