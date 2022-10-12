@@ -67,10 +67,13 @@ class StartGoalFixedPnPEnv(fetch_env.FetchEnv, utils.EzPickle):
             'robot0:slide0': 0.405,
             'robot0:slide1': 0.48,
             'robot0:slide2': 0.0,
-            'object0:joint': [1.25, 0.53, 0.4, 1., 0., 0., 0.],
+            'object0:joint': [
+                1.21231369e+00,  6.16585514e-01,  4.24702091e-01,  1.00000000e+00,
+                -1.92607042e-07,  2.96318526e-07, -9.68767115e-16
+            ],
         }
         self.fixed_object_qpos = initial_qpos['object0:joint']
-        self.fixed_goal = None
+        self.fixed_goal = np.array([1.20391183, 0.83966603, 0.42469975])
         self.np_goal_random, _ = utils.seeding.np_random(initial_goal_seed)
         fetch_env.FetchEnv.__init__(
             self, MODEL_XML_PATH, has_object=True, block_gripper=False,
@@ -93,38 +96,29 @@ class StartGoalFixedPnPEnv(fetch_env.FetchEnv, utils.EzPickle):
         return self.fixed_goal.copy()
 
     def _env_setup(self, initial_qpos):
-        super()._env_setup(initial_qpos)
         self.fixed_goal = self._initialize_goal()
         self.fixed_object_qpos = self._initialize_object_xpos()
+        super()._env_setup(initial_qpos)
 
     def _initialize_goal(self):
-        u_random = self.np_goal_random.uniform(
-            -self.target_range,
-            self.target_range, size=3
-        )
-        if self.has_object:
-            goal = self.initial_gripper_xpos[:3] + u_random
-            goal += self.target_offset
-            goal[2] = self.height_offset
-
-            if self.target_in_the_air and self.np_goal_random.uniform() < 0.5:
-                goal[2] += self.np_goal_random.uniform(0, 0.45)
-            
-            goal = np.array([1.20391183, 0.83966603, 0.42469975])
-        else:
-            goal = self.initial_gripper_xpos[:3] + u_random
-        return goal.copy()
+        return np.array([1.20391183, 0.83966603, 0.42469975])
 
     def _initialize_object_xpos(self):
-        object_xpos = self.initial_gripper_xpos[:2]
-        while np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2]) < 0.1:
-            u_random = self.np_goal_random.uniform(
-                -self.obj_range, self.obj_range, size=2
-            )
-            object_xpos = self.initial_gripper_xpos[:2] + u_random
-        object_qpos = self.sim.data.get_joint_qpos('object0:joint')
-        assert object_qpos.shape == (7,) and object_xpos.shape == (2,)
-        object_qpos[:2] = object_xpos
+        object_qpos = np.array(
+            [
+                1.21231369e+00,  6.16585514e-01,  4.24702091e-01,  1.00000000e+00,
+                -1.92607042e-07,  2.96318526e-07, -9.68767115e-16
+            ]
+        )
+        # object_xpos = self.initial_gripper_xpos[:2]
+        # while np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2]) < 0.1:
+        #     u_random = self.np_goal_random.uniform(
+        #         -self.obj_range, self.obj_range, size=2
+        #     )
+        #     object_xpos = self.initial_gripper_xpos[:2] + u_random
+        # object_qpos = self.sim.data.get_joint_qpos('object0:joint')
+        # assert object_qpos.shape == (7,) and object_xpos.shape == (2,)
+        # object_qpos[:2] = object_xpos
         # self.sim.data.set_joint_qpos('object0:joint', object_qpos)
         return object_qpos
 
