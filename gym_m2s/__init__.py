@@ -27,7 +27,7 @@ register(
 
 register(
     id='SingleFetchPickAndPlace-v3',
-    entry_point='gym_m2s.robotics:GoalFixedGoalFixedPnPEnv',
+    entry_point='gym_m2s.robotics:GoalFixedGoalRewardPnPEnv',
     kwargs=kwargs,
     max_episode_steps=50
 )

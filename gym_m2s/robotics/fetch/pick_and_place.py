@@ -145,7 +145,7 @@ class StartGoalFixedGoalRewardPnPEnv(StartGoalFixedPnPEnv):
         return self.init_obs
 
 
-class GoalFixedGoalFixedPnPEnv(GoalFixedPnPEnv):
+class GoalFixedGoalRewardPnPEnv(GoalFixedPnPEnv):
     def __init__(self, reward_type='sparse', initial_goal_seed=None):
         super().__init__(reward_type, initial_goal_seed)
         self.init_obs = None
