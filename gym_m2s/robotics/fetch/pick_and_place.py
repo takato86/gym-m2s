@@ -20,7 +20,7 @@ class GoalFixedPnPEnv(fetch_env.FetchEnv, utils.EzPickle):
             'object0:joint': [1.25, 0.53, 0.4, 1., 0., 0., 0.],
         }
         self.fixed_object_qpos = initial_qpos['object0:joint']
-        self.fixed_goal = None
+        self.fixed_goal = np.array([1.20391183, 0.83966603, 0.42469975])
         self.np_goal_random, _ = utils.seeding.np_random(initial_goal_seed)
         fetch_env.FetchEnv.__init__(
             self, MODEL_XML_PATH,
