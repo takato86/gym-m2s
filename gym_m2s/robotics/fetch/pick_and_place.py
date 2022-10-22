@@ -43,7 +43,7 @@ class GoalFixedPnPEnv(fetch_env.FetchEnv, utils.EzPickle):
 
     def _env_setup(self, initial_qpos):
         super()._env_setup(initial_qpos)
-        self.fixed_goal = self._initialize_goal()
+        self.fixed_goal = np.array([1.20391183, 0.83966603, 0.42469975])
 
     def _initialize_goal(self):
         u_random = self.np_goal_random.uniform(
