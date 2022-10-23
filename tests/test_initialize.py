@@ -1,6 +1,8 @@
 import gym
 import gym_m2s
 import unittest
+import numpy as np
+from gym.envs.robotics.fetch_env import goal_distance
 
 gym_m2s
 
@@ -47,6 +49,11 @@ class PnPEnvTest(unittest.TestCase):
         self.assertEqual(len(a_goal), 3)
         self.assertEqual(len(d_goal), 3)
         self.assertEqual(len(obs["observation"]), 25)
+        for _ in range(1000):
+            obs = env.reset()
+            dist = goal_distance(obs["achieved_goal"], obs["desired_goal"])
+            self.assertEqual(dist > 0.05, True)
+
 
     def test_initialize_no_reward(self):
         env = gym.make("FetchPickAndPlaceNoReward-v0")

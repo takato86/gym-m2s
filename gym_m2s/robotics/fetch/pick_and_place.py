@@ -19,7 +19,6 @@ class GoalFixedPnPEnv(fetch_env.FetchEnv, utils.EzPickle):
             'robot0:slide2': 0.0,
             'object0:joint': [1.25, 0.53, 0.4, 1., 0., 0., 0.],
         }
-        self.fixed_object_qpos = initial_qpos['object0:joint']
         self.fixed_goal = np.array([1.20391183, 0.83966603, 0.42469975])
         self.np_goal_random, _ = utils.seeding.np_random(initial_goal_seed)
         fetch_env.FetchEnv.__init__(
@@ -51,21 +50,24 @@ class GoalFixedPnPEnv(fetch_env.FetchEnv, utils.EzPickle):
         # Randomize start position of object.
         if self.has_object:
             object_xpos = self.initial_gripper_xpos[:2]
+            object_qpos = self.sim.data.get_joint_qpos("object0:joint")
             object_pos = self.initial_gripper_xpos[:3].copy()
+            object_pos[2] = object_qpos[2]
 
             while (
                     np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2]) < 0.1
                 ) or (
-                    np.linalg.norm(object_pos - self.fixed_goal) < self.distance_threshold
+                    goal_distance(object_pos, self.fixed_goal) <= self.distance_threshold
                 ):
                 object_xpos = self.initial_gripper_xpos[:2] + self.np_random.uniform(
                     -self.obj_range, self.obj_range, size=2
                 )
                 object_pos[:2] = object_xpos
 
-            object_qpos = self.sim.data.get_joint_qpos("object0:joint")
             assert object_qpos.shape == (7,)
             object_qpos[:2] = object_xpos
+            # TODO set_object_qpos変数を消す。
+            self.set_object_qpos = object_pos
             self.sim.data.set_joint_qpos("object0:joint", object_qpos)
 
         self.sim.forward()
