@@ -45,20 +45,46 @@ class GoalFixedPnPEnv(fetch_env.FetchEnv, utils.EzPickle):
         super()._env_setup(initial_qpos)
         self.fixed_goal = np.array([1.20391183, 0.83966603, 0.42469975])
 
-    def _initialize_goal(self):
-        u_random = self.np_goal_random.uniform(
-            -self.target_range,
-            self.target_range, size=3
-        )
+    def _reset_sim(self):
+        self.sim.set_state(self.initial_state)
+
+        # Randomize start position of object.
         if self.has_object:
-            goal = self.initial_gripper_xpos[:3] + u_random
-            goal += self.target_offset
-            goal[2] = self.height_offset
-            if self.target_in_the_air and self.np_goal_random.uniform() < 0.5:
-                goal[2] += self.np_goal_random.uniform(0, 0.45)
-        else:
-            goal = self.initial_gripper_xpos[:3] + u_random
-        return goal.copy()
+            object_xpos = self.initial_gripper_xpos[:2]
+            object_pos = self.initial_gripper_xpos[:3].copy()
+
+            while (
+                    np.linalg.norm(object_xpos - self.initial_gripper_xpos[:2]) < 0.1
+                ) or (
+                    np.linalg.norm(object_pos - self.fixed_goal) < self.distance_threshold
+                ):
+                object_xpos = self.initial_gripper_xpos[:2] + self.np_random.uniform(
+                    -self.obj_range, self.obj_range, size=2
+                )
+                object_pos[:2] = object_xpos
+
+            object_qpos = self.sim.data.get_joint_qpos("object0:joint")
+            assert object_qpos.shape == (7,)
+            object_qpos[:2] = object_xpos
+            self.sim.data.set_joint_qpos("object0:joint", object_qpos)
+
+        self.sim.forward()
+        return True
+
+    # def _initialize_goal(self):
+    #     u_random = self.np_goal_random.uniform(
+    #         -self.target_range,
+    #         self.target_range, size=3
+    #     )
+    #     if self.has_object:
+    #         goal = self.initial_gripper_xpos[:3] + u_random
+    #         goal += self.target_offset
+    #         goal[2] = self.height_offset
+    #         if self.target_in_the_air and self.np_goal_random.uniform() < 0.5:
+    #             goal[2] += self.np_goal_random.uniform(0, 0.45)
+    #     else:
+    #         goal = self.initial_gripper_xpos[:3] + u_random
+    #     return goal.copy()
 
 
 class StartGoalFixedPnPEnv(fetch_env.FetchEnv, utils.EzPickle):
@@ -127,28 +153,16 @@ class StartGoalFixedGoalRewardPnPEnv(StartGoalFixedPnPEnv):
     """start and goal position is fixed, and generate sparse goal positive reward."""
     def __init__(self, reward_type='sparse', initial_goal_seed=None):
         super().__init__(reward_type, initial_goal_seed)
-        self.init_obs = None
 
     def compute_reward(self, achieved_goal, goal, info):
         """Compute goal reward"""
         d = goal_distance(achieved_goal, goal)
         return (d <= self.distance_threshold).astype(np.float32)
 
-    def reset(self):
-        """generate observation."""
-        obs = super().reset()
-
-        if self.init_obs is None:
-            # スタートを生成していなければ、生成して登録。
-            self.init_obs = obs
-
-        return self.init_obs
-
 
 class GoalFixedGoalRewardPnPEnv(GoalFixedPnPEnv):
     def __init__(self, reward_type='sparse', initial_goal_seed=None):
         super().__init__(reward_type, initial_goal_seed)
-        self.init_obs = None
 
     def compute_reward(self, achieved_goal, goal, info):
         """Compute goal reward"""
@@ -160,19 +174,8 @@ class StartGoalFixedNoRewardPnPEnv(StartGoalFixedPnPEnv):
     """start and goal position is fixed, and generate no rewards."""
     def __init__(self, reward_type='sparse', initial_goal_seed=None):
         super().__init__(reward_type, initial_goal_seed)
-        self.init_obs = None
 
     def compute_reward(self, achieved_goal, goal, info):
         """Compute goal reward"""
         d = goal_distance(achieved_goal, goal)
         return (d <= self.distance_threshold).astype(np.float32)
-
-    def reset(self):
-        """generate observation."""
-        obs = super().reset()
-
-        if self.init_obs is None:
-            # スタートを生成していなければ、生成して登録。
-            self.init_obs = obs
-
-        return self.init_obs
